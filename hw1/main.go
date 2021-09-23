@@ -31,6 +31,6 @@ func SqrtWithOtherCondition(x float64, eps float64) (float64, int) {
 
 func main() {
 	fmt.Printf("SIMPLE sqrt : res = %.30f; itter = %d\n", Sqrt(float64(2)), 10)
-	res, itter := SqrtWithOtherCondition(float64(2), 1e-6)
+	res, itter := SqrtWithOtherCondition(float64(0), 1e-6)
 	fmt.Printf("NOT_SIMPLE sqrt : res = %.30f; itter = %d\n", res, itter)
 }
