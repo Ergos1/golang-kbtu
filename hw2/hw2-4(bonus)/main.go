@@ -21,6 +21,9 @@ func rot13(x byte) byte{
 
 func (rot rot13Reader) Read(b []byte) (int, error){
 	n, err := rot.r.Read(b)
+	if err!=nil{
+		return n, err
+	}
 	for i:=0; i < len(b); i++{
 		b[i] = rot13(b[i])
 	}
