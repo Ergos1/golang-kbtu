@@ -10,8 +10,8 @@ func SubWalk(t *tree.Tree, ch chan int) {
 	if t == nil {
 		return
 	}
-	SubWalk(t.Left, ch)
 	ch <- t.Value
+	SubWalk(t.Left, ch)
 	SubWalk(t.Right, ch)
 }
 
@@ -60,13 +60,31 @@ func AddNode(t1 *tree.Tree, v int) error {
 	return fmt.Errorf("some error exception")
 }
 
+func Print(t1 *tree.Tree) {
+	if t1 == nil {
+		return
+	}
+	go Print(t1.Left)
+	go print(t1.Right)
+}
+
 func main() { // YOU CAN TEST BY USING go test -v !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	t1, t2 := tree.New(1), tree.New(1)
-	AddNode(t1, 3)
 	ch := make(chan int)
+	ch2 := make(chan int)
 	go Walk(t1, ch)
 	for i := range ch {
-		fmt.Println(i)
+		fmt.Print(i, " ")
 	}
-	fmt.Println(Same(t1, t2))
+	fmt.Println()
+	go Walk(t2, ch2)
+	for i := range ch2 {
+		fmt.Print(i, " ")
+	}
+	// AddNode(t1, 3)
+	// go Walk(t1, ch)
+	// for i := range ch {
+	// 	fmt.Println(i)
+	// }
+	// fmt.Println(Same(t1, t2))
 }
