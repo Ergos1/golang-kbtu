@@ -154,5 +154,5 @@ func main() {
 
 	fmt.Println("\nSCOREBOARD:")
 	readScoreBoard()
-	fmt.Scan()
+	fmt.Scanln()
 }
