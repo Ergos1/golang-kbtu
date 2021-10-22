@@ -23,6 +23,11 @@ type Server struct {
 	ctx         context.Context
 }
 
+type Response struct {
+	Status  int
+	Message string
+}
+
 func NewServer(ctx context.Context, address string, store store.Store) *Server {
 	return &Server{
 		ctx:         ctx,
@@ -44,6 +49,7 @@ func (s *Server) basicHandler() chi.Router {
 		}
 
 		s.store.Create(r.Context(), nft)
+		render.JSON(w, r, Response{201, "created"})
 	})
 
 	r.Get("/nfts", func(w http.ResponseWriter, r *http.Request) {
