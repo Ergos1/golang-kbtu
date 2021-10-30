@@ -2,16 +2,17 @@ package main
 
 import (
 	"context"
+	"example.com/internal/store/psql"
 	"log"
 
 	"example.com/internal/http"
-	"example.com/internal/store/inmemory"
 )
 
 func main() {
-	store := inmemory.NewDB()
+	db := psql.NewDB()
+	defer db.Close()
 
-	srv := http.NewServer(context.Background(), ":8080", store)
+	srv := http.NewServer(context.Background(), ":8080", db)
 	if err := srv.Run(); err != nil {
 		log.Println(err)
 	}
