@@ -88,7 +88,7 @@ func collectionHandler(r *chi.Mux, s *Server) {
 		render.JSON(w, r, collection)
 	})
 
-	r.Put("/collections/{id}", func(w http.ResponseWriter, r *http.Request) {
+	r.Put("/collectionsg", func(w http.ResponseWriter, r *http.Request) {
 		collection := new(models.Collection)
 		if err := json.NewDecoder(r.Body).Decode(collection); err != nil {
 			w.WriteHeader(http.StatusUnprocessableEntity)
@@ -177,7 +177,7 @@ func userHandler(r *chi.Mux, s *Server) {
 		render.JSON(w, r, user)
 	})
 
-	r.Put("/users/{id}", func(w http.ResponseWriter, r *http.Request) {
+	r.Put("/users", func(w http.ResponseWriter, r *http.Request) {
 		user := new(models.Client)
 		if err := json.NewDecoder(r.Body).Decode(user); err != nil {
 			w.WriteHeader(http.StatusUnprocessableEntity)
@@ -267,7 +267,7 @@ func walletHandler(r *chi.Mux, s *Server) {
 		render.JSON(w, r, wallet)
 	})
 
-	r.Put("/wallets/{id}", func(w http.ResponseWriter, r *http.Request) {
+	r.Put("/wallets", func(w http.ResponseWriter, r *http.Request) {
 		wallet := new(models.Wallet)
 		if err := json.NewDecoder(r.Body).Decode(wallet); err != nil {
 			w.WriteHeader(http.StatusUnprocessableEntity)
@@ -310,67 +310,50 @@ func walletHandler(r *chi.Mux, s *Server) {
 
 func transactionHandler(r *chi.Mux, s *Server) {
 	r.Get("/transactions", func(w http.ResponseWriter, r *http.Request) {
-		rows, err := s.db.Queryx("SELECT * FROM TRANSACTIOn")
+		transactions, err := s.store.Transactions().All(r.Context())
 		if err != nil {
-			render.JSON(w, r, Response{
-				Status:  500,
-				Message: "SERVER's DB ERROR",
-			})
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "DB err: %v", err)
 			return
 		}
-		var transactions []models.Transaction
-		transaction := new(models.Transaction)
-		for rows.Next(){
-			err = rows.StructScan(transaction)
-			transactions = append(transactions, *transaction)
-		}
+
 		render.JSON(w, r, transactions)
 	})
 
 	r.Post("/transactions", func(w http.ResponseWriter, r *http.Request) {
 		transaction := new(models.Transaction)
 		if err := json.NewDecoder(r.Body).Decode(transaction); err != nil {
-			render.JSON(w, r, Response{
-				Status:  400,
-				Message: "Fields of collection are incorrect",
-			})
+			w.WriteHeader(http.StatusUnprocessableEntity)
+			fmt.Fprintf(w, "Unknown err: %v", err)
 			return
 		}
-		_, err := s.db.NamedExec(`INSERT INTO TRANSACTION(walletid, touserid, amount, description)
-										values(:walletid, :touserid, :amount, :description)`, transaction)
-		if err != nil {
-			render.JSON(w, r, Response{
-				Status:  400,
-				Message: "ASDASDAS",
-			})
+
+		if err := s.store.Transactions().Create(r.Context(), transaction); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "DB err: %v", err)
 			return
 		}
-		render.JSON(w, r, Response{
-			Status:  201,
-			Message: "Created collection",
-		})
+
+		w.WriteHeader(http.StatusCreated)
 	})
 
 	r.Get("/transactions/{id}", func(w http.ResponseWriter, r *http.Request) {
 		idStr := chi.URLParam(r, "id")
-		id, err := strconv.ParseUint(idStr, 10, 64)
+		id, err := strconv.Atoi(idStr)
 		if err != nil {
-			render.JSON(w, r, Response{
-				Status:  400,
-				Message: "BAD ID",
-			})
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, "Unknown err: %v", err)
 			return
 		}
-		transaction := new(models.Transaction)
-		err = s.db.Get(transaction, "SELECT * FROM TRANSACTION WHERE id=$1", id)
-		if err != nil || *transaction == (models.Transaction{}){
-			render.JSON(w, r, Response{
-				Status:  404,
-				Message: "NOT FOUND",
-			})
+
+		transaction, err := s.store.Transactions().ByID(r.Context(), id)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "DB err: %v", err)
 			return
 		}
-		render.JSON(w, r, *transaction)
+
+		render.JSON(w, r, transaction)
 	})
 
 	r.Put("/transactions/{id}", func(w http.ResponseWriter, r *http.Request) {
