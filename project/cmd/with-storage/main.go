@@ -2,19 +2,21 @@ package main
 
 import (
 	"context"
-	"example.com/internal/store/psql"
-	"log"
+	"example.com/internal/store/psql/store/postgres"
 
 	"example.com/internal/http"
 )
 
 func main() {
-	db := psql.NewDB()
-	defer db.Close()
+	store := postgres.NewDB()
+	if err := store.Connect(); err != nil {
+		panic(err)
+	}
+	defer store.Close()
 
-	srv := http.NewServer(context.Background(), ":8080", db)
+	srv := http.NewServer(context.Background(), ":8080", store)
 	if err := srv.Run(); err != nil {
-		log.Println(err)
+		panic(err)
 	}
 
 	srv.WaitForGracefulTermination()

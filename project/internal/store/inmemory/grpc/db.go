@@ -1,11 +1,10 @@
 package grpc
 
 import (
+	"example.com/internal/store/store-grpc"
 	"sync"
 
 	"example.com/api"
-
-	"example.com/internal/store"
 )
 
 type DB struct {
@@ -17,13 +16,13 @@ type DB struct {
 	mu *sync.RWMutex
 }
 
-func NewDB() store.Store {
+func NewDB() store_grpc.Store {
 	return &DB{
 		mu: new(sync.RWMutex),
 	}
 }
 
-func (db *DB) Collections() store.CollectionRepository {
+func (db *DB) Collections() store_grpc.CollectionRepository {
 	if db.collectionRepository == nil {
 		db.collectionRepository = &CollectionRepo{
 			data: make(map[uint64]*api.Collection),
@@ -33,7 +32,7 @@ func (db *DB) Collections() store.CollectionRepository {
 	return db.collectionRepository
 }
 
-func (db *DB) NonFungibleToken() store.NonFungibleTokenRepository {
+func (db *DB) NonFungibleToken() store_grpc.NonFungibleTokenRepository {
 	if db.nonFungibleTokenRepository == nil {
 		db.nonFungibleTokenRepository = &NonFungibleTokenRepo{
 			data: make(map[uint64]*api.NonFungibleToken),
@@ -43,7 +42,7 @@ func (db *DB) NonFungibleToken() store.NonFungibleTokenRepository {
 	return db.nonFungibleTokenRepository
 }
 
-func (db *DB) User() store.UserRepository {
+func (db *DB) User() store_grpc.UserRepository {
 	if db.userRepository == nil {
 		db.userRepository = &UserRepo{
 			data: make(map[uint64]*api.User),
@@ -53,7 +52,7 @@ func (db *DB) User() store.UserRepository {
 	return db.userRepository
 }
 
-func (db *DB) Wallet() store.WalletRepository {
+func (db *DB) Wallet() store_grpc.WalletRepository {
 	if db.walletRepository == nil {
 		db.walletRepository = &WalletRepo{
 			data: make(map[uint64]*api.Wallet),

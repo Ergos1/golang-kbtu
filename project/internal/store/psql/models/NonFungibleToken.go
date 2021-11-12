@@ -1,12 +1,12 @@
 package models
 
 type NonFungibleToken struct {
-	Id           uint    `db:"id"`
-	Likes        uint    `db:"likes"`
-	CollectionId uint    `db:"collectionid"`
-	OwnerId      uint    `db:"ownerid"`
-	Price        float64 `db:"price"`
-	Royalties    uint    `db:"royalties"`
-	Title        string  `db:"title"`
-	Description  string  `db:"description"`
+	Id           uint    `db:"id" json:"id"`
+	Likes        uint    `db:"likes" json:"likes"`
+	CollectionId uint    `db:"collectionid" json:"collection_id"`
+	OwnerId      uint    `db:"ownerid" json:"owner_id"`
+	Price        float64 `db:"price" json:"price"`
+	Royalties    uint    `db:"royalties" json:"royalties"`
+	Title        string  `db:"title" json:"title"`
+	Description  string  `db:"description" json:"description"`
 }

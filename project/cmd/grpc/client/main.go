@@ -75,7 +75,7 @@ func createAll(ctx context.Context, conn *grpc.ClientConn) {
 	userClient := api.NewUserServiceClient(conn)
 	walletClient := api.NewWalletServiceClient(conn)
 
-	for i := uint64(1); i <= 0; i++{
+	for i := uint64(1); i <= 10; i++{
 		_, err := walletClient.Create(ctx, &api.Wallet{
 			Id:      i,
 			Balance: 10000000,

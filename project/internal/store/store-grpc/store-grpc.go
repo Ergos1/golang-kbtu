@@ -1,4 +1,4 @@
-package store
+package store_grpc
 
 import (
 	"example.com/api"
