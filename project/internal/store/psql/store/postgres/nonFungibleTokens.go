@@ -24,7 +24,7 @@ func NewNonFungibleTokensRepository(conn *sqlx.DB) store.NonFungibleTokenReposit
 	return &NonFungibleTokensRepository{conn: conn}
 }
 
-func (c NonFungibleTokensRepository) Create(ctx context.Context, collection *models.NonFungibleToken) error {
+func (c NonFungibleTokensRepository) Create(ctx context.Context, collection *models.NonFungibleTokens) error {
 	_, err := c.conn.NamedExec(`INSERT INTO NonFungibleTokens(name, symbol, description, ownerid)
 								VALUES (:name, :symbol, :description, :ownerid)`, collection)
 	if err != nil {
@@ -33,8 +33,8 @@ func (c NonFungibleTokensRepository) Create(ctx context.Context, collection *mod
 	return nil
 }
 
-func (c NonFungibleTokensRepository) All(ctx context.Context) ([]*models.NonFungibleToken, error) {
-	collections := make([]*models.NonFungibleToken, 0)
+func (c NonFungibleTokensRepository) All(ctx context.Context) ([]*models.NonFungibleTokens, error) {
+	collections := make([]*models.NonFungibleTokens, 0)
 	if err := c.conn.Select(&collections, "SELECT * FROM NonFungibleTokens"); err != nil {
 		return nil, err
 	}
@@ -42,8 +42,8 @@ func (c NonFungibleTokensRepository) All(ctx context.Context) ([]*models.NonFung
 	return collections, nil
 }
 
-func (c NonFungibleTokensRepository) ByID(ctx context.Context, id int) (*models.NonFungibleToken, error) {
-	collection := new(models.NonFungibleToken)
+func (c NonFungibleTokensRepository) ByID(ctx context.Context, id int) (*models.NonFungibleTokens, error) {
+	collection := new(models.NonFungibleTokens)
 	if err := c.conn.Get(collection, "SELECT * FROM NonFungibleTokens WHERE id=$1", id); err != nil {
 		return nil, err
 	}
@@ -51,7 +51,7 @@ func (c NonFungibleTokensRepository) ByID(ctx context.Context, id int) (*models.
 	return collection, nil
 }
 
-func (c NonFungibleTokensRepository) Update(ctx context.Context, collection *models.NonFungibleToken) error {
+func (c NonFungibleTokensRepository) Update(ctx context.Context, collection *models.NonFungibleTokens) error {
 	var query []string
 	v := reflect.ValueOf(*collection)
 	typeOf := v.Type()

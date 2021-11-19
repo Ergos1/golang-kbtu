@@ -24,17 +24,17 @@ func NewWalletsRepository(conn *sqlx.DB) store.WalletRepository {
 	return &WalletsRepository{conn: conn}
 }
 
-func (c WalletsRepository) Create(ctx context.Context, collection *models.Wallet) error {
-	_, err := c.conn.NamedExec(`INSERT INTO Wallets(name, symbol, description, ownerid)
-								VALUES (:name, :symbol, :description, :ownerid)`, collection)
+func (c WalletsRepository) Create(ctx context.Context, wallet *models.Wallets) error {
+	_, err := c.conn.NamedExec(`INSERT INTO Wallets(balance)
+								VALUES (:balance)`, wallet)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (c WalletsRepository) All(ctx context.Context) ([]*models.Wallet, error) {
-	collections := make([]*models.Wallet, 0)
+func (c WalletsRepository) All(ctx context.Context) ([]*models.Wallets, error) {
+	collections := make([]*models.Wallets, 0)
 	if err := c.conn.Select(&collections, "SELECT * FROM Wallets"); err != nil {
 		return nil, err
 	}
@@ -42,8 +42,8 @@ func (c WalletsRepository) All(ctx context.Context) ([]*models.Wallet, error) {
 	return collections, nil
 }
 
-func (c WalletsRepository) ByID(ctx context.Context, id int) (*models.Wallet, error) {
-	collection := new(models.Wallet)
+func (c WalletsRepository) ByID(ctx context.Context, id int) (*models.Wallets, error) {
+	collection := new(models.Wallets)
 	if err := c.conn.Get(collection, "SELECT * FROM Wallets WHERE id=$1", id); err != nil {
 		return nil, err
 	}
@@ -51,7 +51,7 @@ func (c WalletsRepository) ByID(ctx context.Context, id int) (*models.Wallet, er
 	return collection, nil
 }
 
-func (c WalletsRepository) Update(ctx context.Context, collection *models.Wallet) error {
+func (c WalletsRepository) Update(ctx context.Context, collection *models.Wallets) error {
 	var query []string
 	v := reflect.ValueOf(*collection)
 	typeOf := v.Type()

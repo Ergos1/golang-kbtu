@@ -1,6 +1,6 @@
 package models
 
-type Transaction struct {
+type Transactions struct {
 	Id          uint    `db:"id" json:"id"`
 	WalletId    uint    `db:"walletid" json:"wallet_id"`
 	ToUserId    uint    `db:"touserid" json:"to_user_id"`

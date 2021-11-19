@@ -1,6 +1,6 @@
 package models
 
-type Client struct {
+type Clients struct {
 	Id       uint	`db:"id" json:"id"`
 	WalletId uint	`db:"walletid" json:"wallet_id"`
 	Username string	`db:"username" json:"username"`

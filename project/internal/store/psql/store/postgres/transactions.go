@@ -24,7 +24,7 @@ func NewTransactionsRepository(conn *sqlx.DB) store.TransactionRepository {
 	return &TransactionsRepository{conn: conn}
 }
 
-func (c TransactionsRepository) Create(ctx context.Context, collection *models.Transaction) error {
+func (c TransactionsRepository) Create(ctx context.Context, collection *models.Transactions) error {
 	_, err := c.conn.NamedExec(`INSERT INTO Transactions(name, symbol, description, ownerid)
 								VALUES (:name, :symbol, :description, :ownerid)`, collection)
 	if err != nil {
@@ -33,8 +33,8 @@ func (c TransactionsRepository) Create(ctx context.Context, collection *models.T
 	return nil
 }
 
-func (c TransactionsRepository) All(ctx context.Context) ([]*models.Transaction, error) {
-	collections := make([]*models.Transaction, 0)
+func (c TransactionsRepository) All(ctx context.Context) ([]*models.Transactions, error) {
+	collections := make([]*models.Transactions, 0)
 	if err := c.conn.Select(&collections, "SELECT * FROM Transactions"); err != nil {
 		return nil, err
 	}
@@ -42,8 +42,8 @@ func (c TransactionsRepository) All(ctx context.Context) ([]*models.Transaction,
 	return collections, nil
 }
 
-func (c TransactionsRepository) ByID(ctx context.Context, id int) (*models.Transaction, error) {
-	collection := new(models.Transaction)
+func (c TransactionsRepository) ByID(ctx context.Context, id int) (*models.Transactions, error) {
+	collection := new(models.Transactions)
 	if err := c.conn.Get(collection, "SELECT * FROM Transactions WHERE id=$1", id); err != nil {
 		return nil, err
 	}
@@ -51,7 +51,7 @@ func (c TransactionsRepository) ByID(ctx context.Context, id int) (*models.Trans
 	return collection, nil
 }
 
-func (c TransactionsRepository) Update(ctx context.Context, collection *models.Transaction) error {
+func (c TransactionsRepository) Update(ctx context.Context, collection *models.Transactions) error {
 	var query []string
 	v := reflect.ValueOf(*collection)
 	typeOf := v.Type()

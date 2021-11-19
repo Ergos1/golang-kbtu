@@ -17,42 +17,42 @@ type Store interface {
 }
 
 type CollectionRepository interface {
-	Create(ctx context.Context, collection *models.Collection) error
-	All(ctx context.Context) ([]*models.Collection, error)
-	ByID(ctx context.Context, id int) (*models.Collection, error)
-	Update(ctx context.Context, collection *models.Collection) error
+	Create(ctx context.Context, collection *models.Collections) error
+	All(ctx context.Context) ([]*models.Collections, error)
+	ByID(ctx context.Context, id int) (*models.Collections, error)
+	Update(ctx context.Context, collection *models.Collections) error
 	Delete(ctx context.Context, id int) error
 }
 
 type NonFungibleTokenRepository interface {
-	Create(ctx context.Context, nft *models.NonFungibleToken) error
-	All(ctx context.Context) ([]*models.NonFungibleToken, error)
-	ByID(ctx context.Context, id int) (*models.NonFungibleToken, error)
-	Update(ctx context.Context, nft *models.NonFungibleToken) error
+	Create(ctx context.Context, nft *models.NonFungibleTokens) error
+	All(ctx context.Context) ([]*models.NonFungibleTokens, error)
+	ByID(ctx context.Context, id int) (*models.NonFungibleTokens, error)
+	Update(ctx context.Context, nft *models.NonFungibleTokens) error
 	Delete(ctx context.Context, id int) error
 }
 
 type TransactionRepository interface {
-	Create(ctx context.Context, transaction *models.Transaction) error
-	All(ctx context.Context) ([]*models.Transaction, error)
-	ByID(ctx context.Context, id int) (*models.Transaction, error)
-	Update(ctx context.Context, transaction *models.Transaction) error
+	Create(ctx context.Context, transaction *models.Transactions) error
+	All(ctx context.Context) ([]*models.Transactions, error)
+	ByID(ctx context.Context, id int) (*models.Transactions, error)
+	Update(ctx context.Context, transaction *models.Transactions) error
 	Delete(ctx context.Context, id int) error
 }
 
 type UserRepository interface {
-	Create(ctx context.Context, user *models.Client) error
-	All(ctx context.Context) ([]*models.Client, error)
-	ByID(ctx context.Context, id int) (*models.Client, error)
-	Update(ctx context.Context, user *models.Client) error
+	Create(ctx context.Context, user *models.Clients) error
+	All(ctx context.Context) ([]*models.Clients, error)
+	ByID(ctx context.Context, id int) (*models.Clients, error)
+	Update(ctx context.Context, user *models.Clients) error
 	Delete(ctx context.Context, id int) error
 }
 
 type WalletRepository interface {
-	Create(ctx context.Context, wallet *models.Wallet) error
-	All(ctx context.Context) ([]*models.Wallet, error)
-	ByID(ctx context.Context, id int) (*models.Wallet, error)
-	Update(ctx context.Context, wallet *models.Wallet) error
+	Create(ctx context.Context, wallet *models.Wallets) error
+	All(ctx context.Context) ([]*models.Wallets, error)
+	ByID(ctx context.Context, id int) (*models.Wallets, error)
+	Update(ctx context.Context, wallet *models.Wallets) error
 	Delete(ctx context.Context, id int) error
 }
 

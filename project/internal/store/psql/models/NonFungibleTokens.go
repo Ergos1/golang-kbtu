@@ -1,6 +1,6 @@
 package models
 
-type NonFungibleToken struct {
+type NonFungibleTokens struct {
 	Id           uint    `db:"id" json:"id"`
 	Likes        uint    `db:"likes" json:"likes"`
 	CollectionId uint    `db:"collectionid" json:"collection_id"`

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"example.com/internal/store/psql/models"
 	"example.com/internal/store/psql/store"
+	"example.com/pkg/cache"
 	"fmt"
 	"github.com/go-chi/render"
 	"github.com/go-ozzo/ozzo-validation/v4"
@@ -19,6 +20,7 @@ import (
 type Server struct {
 	Address string
 
+	cache cache.Cache
 	store store.Store
 	idleConnsCh chan struct{}
 	ctx         context.Context
@@ -29,13 +31,17 @@ type Response struct {
 	Message string
 }
 
-func NewServer(ctx context.Context, address string, store store.Store) *Server {
-	return &Server{
+func NewServer(ctx context.Context, opts ...ServerOption) *Server {
+	srv := &Server{
 		ctx:         ctx,
-		Address:     address,
 		idleConnsCh: make(chan struct{}),
-		store:       store,
 	}
+
+	for _, opt := range opts {
+		opt(srv)
+	}
+
+	return srv
 }
 
 func collectionHandler(r *chi.Mux, s *Server) {
@@ -51,7 +57,7 @@ func collectionHandler(r *chi.Mux, s *Server) {
 	})
 	
 	r.Post("/collections", func(w http.ResponseWriter, r *http.Request) {
-		collection := new(models.Collection)
+		collection := new(models.Collections)
 		if err := json.NewDecoder(r.Body).Decode(collection); err != nil {
 			w.WriteHeader(http.StatusUnprocessableEntity)
 			fmt.Fprintf(w, "Unknown err: %v", err)
@@ -87,7 +93,7 @@ func collectionHandler(r *chi.Mux, s *Server) {
 	})
 
 	r.Put("/collections", func(w http.ResponseWriter, r *http.Request) {
-		collection := new(models.Collection)
+		collection := new(models.Collections)
 		if err := json.NewDecoder(r.Body).Decode(collection); err != nil {
 			w.WriteHeader(http.StatusUnprocessableEntity)
 			fmt.Fprintf(w, "Unknown err: %v", err)
@@ -129,18 +135,23 @@ func collectionHandler(r *chi.Mux, s *Server) {
 
 func userHandler(r *chi.Mux, s *Server) {
 	r.Get("/users", func(w http.ResponseWriter, r *http.Request) {
-		users, err := s.store.Users().All(r.Context())
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, "DB err: %v", err)
-			return
+		users := s.cache.Users().GetAll("users")
+		if users == nil {
+			users, err := s.store.Users().All(r.Context())
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				fmt.Fprintf(w, "DB err: %v", err)
+				return
+			}
+
+			s.cache.Users().SetAll("users", users)
 		}
 
 		render.JSON(w, r, users)
 	})
 
 	r.Post("/users", func(w http.ResponseWriter, r *http.Request) {
-		user := new(models.Client)
+		user := new(models.Clients)
 		if err := json.NewDecoder(r.Body).Decode(user); err != nil {
 			w.WriteHeader(http.StatusUnprocessableEntity)
 			fmt.Fprintf(w, "Unknown err: %v", err)
@@ -165,23 +176,30 @@ func userHandler(r *chi.Mux, s *Server) {
 			return
 		}
 
-		user, err := s.store.Users().ByID(r.Context(), id)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, "DB err: %v", err)
-			return
+		user := s.cache.Users().Get(idStr)
+		if user == nil {
+			user, err = s.store.Users().ByID(r.Context(), id)
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				fmt.Fprintf(w, "DB err: %v", err)
+				return
+			}
+
+			s.cache.Users().Set(idStr, user)
 		}
 
 		render.JSON(w, r, user)
 	})
 
 	r.Put("/users", func(w http.ResponseWriter, r *http.Request) {
-		user := new(models.Client)
+		user := new(models.Clients)
 		if err := json.NewDecoder(r.Body).Decode(user); err != nil {
 			w.WriteHeader(http.StatusUnprocessableEntity)
 			fmt.Fprintf(w, "Unknown err: %v", err)
 			return
 		}
+
+		s.cache.Users().Delete(strconv.Itoa(int(user.Id)))
 
 		err := validation.ValidateStruct(
 			user,
@@ -198,9 +216,12 @@ func userHandler(r *chi.Mux, s *Server) {
 			fmt.Fprintf(w, "DB err: %v", err)
 			return
 		}
+
 	})
 	r.Delete("/users/{id}", func(w http.ResponseWriter, r *http.Request) {
 		idStr := chi.URLParam(r, "id")
+		s.cache.Users().Delete(idStr)
+		s.cache.Users().Delete("users")
 		id, err := strconv.Atoi(idStr)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
@@ -230,7 +251,7 @@ func walletHandler(r *chi.Mux, s *Server) {
 	})
 
 	r.Post("/wallets", func(w http.ResponseWriter, r *http.Request) {
-		wallet := new(models.Wallet)
+		wallet := new(models.Wallets)
 		if err := json.NewDecoder(r.Body).Decode(wallet); err != nil {
 			w.WriteHeader(http.StatusUnprocessableEntity)
 			fmt.Fprintf(w, "Unknown err: %v", err)
@@ -255,23 +276,32 @@ func walletHandler(r *chi.Mux, s *Server) {
 			return
 		}
 
-		wallet, err := s.store.Wallets().ByID(r.Context(), id)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, "DB err: %v", err)
-			return
+		wallet := s.cache.Wallets().Get(idStr)
+		if wallet == nil {
+			log.Println("HI")
+			wallet, err = s.store.Wallets().ByID(r.Context(), id)
+			log.Print(wallet)
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				fmt.Fprintf(w, "DB err: %v", err)
+				return
+			}
+
+			s.cache.Wallets().Set(idStr, wallet)
 		}
 
 		render.JSON(w, r, wallet)
 	})
 
 	r.Put("/wallets", func(w http.ResponseWriter, r *http.Request) {
-		wallet := new(models.Wallet)
+		wallet := new(models.Wallets)
 		if err := json.NewDecoder(r.Body).Decode(wallet); err != nil {
 			w.WriteHeader(http.StatusUnprocessableEntity)
 			fmt.Fprintf(w, "Unknown err: %v", err)
 			return
 		}
+
+		s.cache.Wallets().Delete(strconv.Itoa(int(wallet.Id)))
 
 		err := validation.ValidateStruct(
 			wallet,
@@ -291,6 +321,8 @@ func walletHandler(r *chi.Mux, s *Server) {
 	})
 	r.Delete("/wallets/{id}", func(w http.ResponseWriter, r *http.Request) {
 		idStr := chi.URLParam(r, "id")
+		s.cache.Wallets().Delete(idStr)
+		s.cache.Wallets().Delete("wallets")
 		id, err := strconv.Atoi(idStr)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
@@ -319,7 +351,7 @@ func transactionHandler(r *chi.Mux, s *Server) {
 	})
 
 	r.Post("/transactions", func(w http.ResponseWriter, r *http.Request) {
-		transaction := new(models.Transaction)
+		transaction := new(models.Transactions)
 		if err := json.NewDecoder(r.Body).Decode(transaction); err != nil {
 			w.WriteHeader(http.StatusUnprocessableEntity)
 			fmt.Fprintf(w, "Unknown err: %v", err)
@@ -355,7 +387,7 @@ func transactionHandler(r *chi.Mux, s *Server) {
 	})
 
 	r.Put("/transactions", func(w http.ResponseWriter, r *http.Request) {
-		transaction := new(models.Transaction)
+		transaction := new(models.Transactions)
 		if err := json.NewDecoder(r.Body).Decode(transaction); err != nil {
 			w.WriteHeader(http.StatusUnprocessableEntity)
 			fmt.Fprintf(w, "Unknown err: %v", err)
@@ -408,7 +440,7 @@ func nftHandler(r *chi.Mux, s *Server) {
 	})
 
 	r.Post("/nfts", func(w http.ResponseWriter, r *http.Request) {
-		category := new(models.NonFungibleToken)
+		category := new(models.NonFungibleTokens)
 		if err := json.NewDecoder(r.Body).Decode(category); err != nil {
 			w.WriteHeader(http.StatusUnprocessableEntity)
 			fmt.Fprintf(w, "Unknown err: %v", err)
@@ -444,7 +476,7 @@ func nftHandler(r *chi.Mux, s *Server) {
 	})
 
 	r.Put("/nfts", func(w http.ResponseWriter, r *http.Request) {
-		nft := new(models.NonFungibleToken)
+		nft := new(models.NonFungibleTokens)
 		if err := json.NewDecoder(r.Body).Decode(nft); err != nil {
 			w.WriteHeader(http.StatusUnprocessableEntity)
 			fmt.Fprintf(w, "Unknown err: %v", err)
