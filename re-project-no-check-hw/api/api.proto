@@ -1,0 +1,104 @@
+syntax="proto3";
+
+option go_package="example.com/api";
+
+package api;
+
+message Id {
+  uint64 id = 1;
+}
+
+message Empty {}
+
+// Wallet
+message Wallet {
+  uint64 id = 1;
+
+  double balance = 2;
+}
+message Wallets {
+  repeated  Wallet wallets = 1;
+}
+
+service WalletService {
+  rpc All(Empty) returns (Wallets);
+  rpc ByID(Id) returns (Wallet);
+  rpc Create(Wallet) returns (Empty);
+  rpc Update(Wallet) returns (Empty);
+  rpc Delete(Id) returns (Empty);
+}
+
+// User
+// Delete => delete wallet, delete all nft
+message User {
+  uint64 id = 1;
+  uint64 wallet_id = 2;
+
+  string username = 3;
+  string email = 4;
+  string password = 5;
+}
+
+message Users {
+  repeated User users = 1;
+}
+
+service UserService {
+  rpc All(Empty) returns (Users);
+  rpc ByID(Id) returns (User);
+  rpc Create(User) returns (Empty);
+  rpc Update(User) returns (Empty);
+  rpc Delete(Id) returns (Empty);
+}
+
+// NFT
+message NonFungibleToken {
+  uint64 id = 1;
+  uint64 likes = 2;
+  uint64 collection_id = 3;
+  uint64 owner_id = 4;
+
+  double price = 5;
+  double royalties = 6;
+
+  string title = 7;
+  string description = 8;
+
+  map<string, string> properties = 9;
+}
+
+message NonFungibleTokens {
+  repeated NonFungibleToken nonFungibleTokens = 1;
+}
+
+service NonFungibleTokenService {
+  rpc All(Empty) returns (NonFungibleTokens);
+  rpc ByID(Id) returns (NonFungibleToken);
+  rpc Create(NonFungibleToken) returns (Empty);
+  rpc Update(NonFungibleToken) returns (Empty);
+  rpc Delete(Id) returns (Empty);
+}
+
+// Collection
+// Delete => delete all nft tokens
+message Collection {
+  uint64 id = 1;
+  uint64 owner_id = 2;
+
+  string name = 3;
+  string symbol = 4;
+  string description = 5;
+}
+
+message Collections {
+  repeated Collection collections = 1;
+}
+
+service CollectionService {
+  rpc All(Empty) returns (Collections);
+  rpc ByID(Id) returns (Collection);
+  rpc Create(Collection) returns (Empty);
+  rpc Update(Collection) returns (Empty);
+  rpc Delete(Id) returns (Empty);
+}
+
