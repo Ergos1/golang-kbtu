@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/go-redis/redis/v8"
@@ -53,36 +52,37 @@ func (cache *RedisCache) Set(ctx context.Context, key interface{}, value interfa
 	return err
 }
 
-// Idea of Remove is like: 
+// Idea of Remove is like:
 // I get like wallet-... || account-...
 // After I just create struct by new(...)
 // Save in temp field after remove from cache
 // Remove by id item and again set it
 // That's all
 func (cache *RedisCache) Remove(ctx context.Context, key interface{}) error {
-	info := strings.Split(fmt.Sprintf("%v", key), "-")
-	switch info[0] {
-	case "wallet":
-		fmt.Print("Implement me EPA DONT FORGET")
-	case "account":
-		fmt.Print("Implement me EPA DONT FORGET")
-	case "...":
-		fmt.Print("Implement me EPA DONT FORGET")
-	default:
-		fmt.Print("Implement me EPA DONT FORGET")
-	}
-	
-	var oldResult interface{}
-	cache.Get(ctx, "all", oldResult)
+	// info := strings.Split(fmt.Sprintf("%v", key), "-")
+	// switch info[0] {
+	// case "wallet":
+	// 	fmt.Print("Implement me EPA DONT FORGET")
+	// case "account":
+	// 	fmt.Print("Implement me EPA DONT FORGET")
+	// case "...":
+	// 	fmt.Print("Implement me EPA DONT FORGET")
+	// default:
+	// 	fmt.Print("Implement me EPA DONT FORGET")
+	// }
 
-	fmt.Println(oldResult) // Pls deadline gonna kill me, give me more time, I promise I will do it
-	
+	// var oldResult interface{}
+	// cache.Get(ctx, "all", oldResult)
+
+	// fmt.Println(oldResult) // Pls deadline gonna kill me, give me more time, I promise I will do it
+
 	result := cache.client.Del(ctx, fmt.Sprintf("%v", key))
 	if result.Err() != nil {
 		return result.Err()
 	}
 
 	return nil
+	// return cache.Purge(ctx)
 }
 
 func (cache *RedisCache) Purge(ctx context.Context) error {

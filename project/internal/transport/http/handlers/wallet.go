@@ -158,5 +158,6 @@ func (wh *WalletHandler) DeleteWallet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	wh.broker.Cache().Remove(id)
+	// wh.broker.Cache().Remove(id)
+	wh.broker.Cache().Purge()
 }

@@ -155,5 +155,5 @@ func (ah *TransactionHandler) DeleteTransaction(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	ah.broker.Cache().Remove(id)
+	ah.broker.Cache().Purge()
 }

@@ -156,5 +156,6 @@ func (ah *CollectionHandler) DeleteCollection(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	ah.broker.Cache().Remove(id)
+	// ah.broker.Cache().Remove(id)
+	ah.broker.Cache().Purge()
 }

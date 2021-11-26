@@ -156,5 +156,6 @@ func (ah *CategoryHandler) DeleteCategory(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	ah.broker.Cache().Remove(id)
+	// ah.broker.Cache().Remove(id)
+	ah.broker.Cache().Purge()
 }

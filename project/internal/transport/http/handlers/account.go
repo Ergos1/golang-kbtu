@@ -156,5 +156,6 @@ func (ah *AccountHandler) DeleteAccount(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	ah.broker.Cache().Remove(id)
+	// ah.broker.Cache().Remove(id)
+	ah.broker.Cache().Purge()
 }
