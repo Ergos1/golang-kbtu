@@ -1,7 +1,8 @@
 package http
 
 import (
-	"example.com/internal/database/psql/store"
+	messagebroker "example.com/internal/message_broker"
+	"example.com/internal/store"
 	"example.com/pkg/cache/redis"
 )
 
@@ -19,8 +20,14 @@ func WithStore(store store.Store) ServerOption {
 	}
 }
 
-func WithCache(cache redis.Cache) ServerOption {
+func WithCache(cache *redis.RedisCache) ServerOption {
 	return func(srv *Server) {
 		srv.cache = cache
+	}
+}
+
+func WithBroker(broker messagebroker.MessageBroker) ServerOption {
+	return func(srv *Server) {
+		srv.broker = broker
 	}
 }

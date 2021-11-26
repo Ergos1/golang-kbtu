@@ -20,7 +20,7 @@ type PostgresConfig struct {
 }
 
 func (pc PostgresConfig) Uri() string {
-	return fmt.Sprintf("psql://%s:%s@%s:%d/%s?sslmode=disable",
+	return fmt.Sprintf("postgresql://%s:%s@%s:%d/%s?sslmode=disable",
 		pc.User, pc.Password, pc.Host, pc.Port, pc.Dbname)
 }
 
@@ -50,7 +50,7 @@ func NewConfig() *Config {
 			Dbname:   getEnv("POSTGRES_DBNAME", "postgres"),
 		},
 		Redis: RedisConfig{
-			Host:    getEnv("REDIS_HOST", "localhost"),
+			Host:    getEnv("REDIS_HOST", "localhost:6379"),
 			Db:      getEnvAsInt("REDIS_DB", 0),
 			Expires: getEnvAsTimeDuration("REDIS_EXPIRES", 0),
 		},

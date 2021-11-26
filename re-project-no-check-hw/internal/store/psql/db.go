@@ -1,7 +1,7 @@
 package psql
 
 import (
-	"example.com/internal/database/psql/store"
+	"example.com/internal/store"
 	"example.com/pkg/database/psql"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
@@ -10,13 +10,13 @@ import (
 type DB struct {
 	conn *sqlx.DB
 
-	collections       store.CollectionRepository
-	nonFungibleTokens store.NonFungibleTokenRepository
-	transactions      store.TransactionRepository
-	users             store.UserRepository
-	wallets           store.WalletRepository
+	collections  store.CollectionsRepository
+	assets       store.AssetsRepository
+	transactions store.TransactionsRepository
+	accounts     store.AccountsRepository
+	wallets      store.WalletsRepository
+	categories   store.CategoriesRepository
 }
-
 
 func NewDB() store.Store {
 	return &DB{}

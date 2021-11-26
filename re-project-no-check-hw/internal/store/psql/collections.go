@@ -2,18 +2,17 @@ package psql
 
 import (
 	"context"
-	"example.com/internal/database/psql/models"
-	"example.com/internal/database/psql/store"
-	"fmt"
+
+	"example.com/internal/models"
+	"example.com/internal/store"
+	"example.com/pkg/database/psql/operations"
 	"github.com/jmoiron/sqlx"
-	"reflect"
 )
 
-func(db *DB) Collections() store.CollectionRepository {
+func (db *DB) Collections() store.CollectionsRepository {
 	if db.collections == nil {
 		db.collections = NewCollectionsRepository(db.conn)
 	}
-
 	return db.collections
 }
 
@@ -21,62 +20,52 @@ type CollectionsRepository struct {
 	conn *sqlx.DB
 }
 
-func NewCollectionsRepository(conn *sqlx.DB) store.CollectionRepository {
+func NewCollectionsRepository(conn *sqlx.DB) store.CollectionsRepository {
 	return &CollectionsRepository{conn: conn}
 }
 
-func (c CollectionsRepository) Create(ctx context.Context, collection *models.Collections) error {
-	_, err := c.conn.NamedExec(`INSERT INTO Collections(name, symbol, description, ownerid)
-								VALUES (:name, :symbol, :description, :ownerid)`, collection)
+func (c CollectionsRepository) Create(ctx context.Context, collection *models.Collection) error {
+	_, err := operations.Insert(c.conn, "Collections", collection)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (c CollectionsRepository) All(ctx context.Context) ([]*models.Collections, error) {
-	collections := make([]*models.Collections, 0)
-	if err:=c.conn.Select(&collections, "SELECT * FROM collections"); err != nil {
+func (c CollectionsRepository) All(ctx context.Context, filter *models.CollectionFilter) ([]*models.Collection, error) {
+	collections := make([]*models.Collection, 0)
+	if filter.Query != nil {
+		if err := c.conn.Select(&collections, "SELECT * FROM Collections WHERE name ILIKE $1", "%"+*filter.Query+"%"); err != nil {
+			return nil, err
+		}
+
+		return collections, nil
+	}
+	if err := c.conn.Select(&collections, "SELECT * FROM Collections"); err != nil {
 		return nil, err
 	}
-
 	return collections, nil
 }
 
-func (c CollectionsRepository) ByID(ctx context.Context, id int) (*models.Collections, error) {
-	collection := new(models.Collections)
-	if err := c.conn.Get(collection, "SELECT * FROM categories WHERE id=$1", id); err != nil {
+func (c CollectionsRepository) ByID(ctx context.Context, id uint) (*models.Collection, error) {
+	collection := new(models.Collection)
+	if err := c.conn.Get(collection, "SELECT * FROM Collections WHERE id=$1", id); err != nil {
 		return nil, err
 	}
 
 	return collection, nil
 }
 
-func (c CollectionsRepository) Update(ctx context.Context, collection *models.Collections) error {
-	var query []string
-	v := reflect.ValueOf(*collection)
-	typeOf := v.Type()
-	for i := 0; i < v.NumField(); i++ {
-		if v.Field(i).Interface() == reflect.Zero(reflect.TypeOf(v.Field(i).Interface())).Interface(){
-			continue
-		}
-		query = append(query, fmt.Sprintf("%s=%v", typeOf.Field(i).Name, v.Field(i).Interface()))
-	}
-	_, err := c.conn.Exec("UPDATE collections SET $1 WHERE id = $2", query, collection.Id)
-	if err != nil {
+func (c CollectionsRepository) Update(ctx context.Context, collection *models.Collection) error {
+	if _, err := operations.Update(c.conn, "Collections", collection); err != nil {
 		return err
 	}
-
 	return nil
 }
 
-func (c CollectionsRepository) Delete(ctx context.Context, id int) error {
-	_, err := c.conn.Exec("DELETE FROM collections WHERE id = $1", id)
-	if err != nil {
+func (c CollectionsRepository) Delete(ctx context.Context, id uint) error {
+	if _, err := operations.Delete(c.conn, "Collections", id); err != nil {
 		return err
 	}
-
 	return nil
 }
-
-
